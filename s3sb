@@ -1,0 +1,83 @@
+#!/bin/bash
+
+#################################################
+#                                               #
+#     .~- s3sb -~.                              #
+#         S3 Site Backup ..                     #
+#                          by BigglesZX ..~     #
+#                                               #
+#     { http://github.com/BigglesZX/s3sb }      #
+#                                               #
+#################################################
+
+#******************************************************************************#
+#                                                                              #
+#   Copyright 2009 BigglesZX                                                   #
+#                                                                              #
+#   Licensed under the Apache License, Version 2.0 (the "License");            #
+#   you may not use this file except in compliance with the License.           #
+#   You may obtain a copy of the License at                                    #
+#                                                                              #
+#       http://www.apache.org/licenses/LICENSE-2.0                             #
+#                                                                              #
+#   Unless required by applicable law or agreed to in writing, software        #
+#   distributed under the License is distributed on an "AS IS" BASIS,          #
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   #
+#   See the License for the specific language governing permissions and        #
+#   limitations under the License.                                             #
+#                                                                              #
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+
+# params
+MODE=$1
+SITENAME=$2
+DBHOST=$3
+DBUSER=$4
+DBPASS=$5
+DBNAME=$6
+DIRNAME=$7
+
+TIMESTAMP=`date "+%Y%m%d.%H%M%S"`
+
+if [ $# -lt 7 ]
+then
+	echo "Usage: ./s3sb [all | files | db] sitename dbhost dbuser dbpassfile dbname dirname/"
+	exit
+fi
+
+echo "s3backup: starting backup of $SITENAME (mode: $MODE)..."
+
+if [ "$MODE" == "all" ] || [ "$MODE" == "db" ]; then
+	# dump database
+	echo "dumping database..."
+	mysqldump -h $DBHOST -u $DBUSER -p`cat $DBPASS` --opt $DBNAME | gzip > $SITENAME.db.$TIMESTAMP.sql.gz
+fi
+
+if [ "$MODE" == "all" ] || [ "$MODE" == "files" ]; then
+	# create tarball of site files
+	echo "archiving site files..."
+	tar -czf $SITENAME.files.$TIMESTAMP.tar.gz $DIRNAME
+fi
+
+if [ "$MODE" == "all" ] || [ "$MODE" == "db" ]; then
+	# upload database
+	echo "uploading database dump..."
+	./lib/s3-put -k `cat key.txt` -s skey.txt -T $SITENAME.db.$TIMESTAMP.sql.gz -S /s3sb/$SITENAME/$SITENAME.db.$TIMESTAMP.sql.gz
+fi
+
+if [ "$MODE" == "all" ] || [ "$MODE" == "files" ]; then
+	# upload site files
+	echo "uploading site archive..."
+	./lib/s3-put -k `cat key.txt` -s skey.txt -T $SITENAME.files.$TIMESTAMP.tar.gz -S /s3sb/$SITENAME/$SITENAME.files.$TIMESTAMP.tar.gz
+fi
+
+# clean up
+echo "cleaning up..."
+if [ "$MODE" == "all" ] || [ "$MODE" == "files" ]; then
+	rm $SITENAME.files.$TIMESTAMP.tar.gz
+fi
+if [ "$MODE" == "all" ] || [ "$MODE" == "db" ]; then
+	rm $SITENAME.db.$TIMESTAMP.sql.gz
+fi
+
+echo "done"
