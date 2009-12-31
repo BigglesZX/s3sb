@@ -10,9 +10,17 @@
 #                                               #
 #################################################
 
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^#
+#   This script is still very much a work in progress. Various   #
+#   things are likely to be broken, as noted in the README       #
+#   file. You'll be able to get it going, no doubt, with a bit   #
+#   of tweaking, but it's not quite in a production-ready        #
+#   state. Please read the README.                               #
+#________________________________________________________________#
+
 #******************************************************************************#
 #                                                                              #
-#   Copyright 2009 BigglesZX                                                   #
+#   Copyright 2010 BigglesZX                                                   #
 #                                                                              #
 #   Licensed under the Apache License, Version 2.0 (the "License");            #
 #   you may not use this file except in compliance with the License.           #

@@ -1,0 +1,49 @@
+/////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//////////////////                                      \\\\\\\\\\\\\\\\\\
+///////////                     _.-~^^~-._                     \\\\\\\\\\\
+///////                     .-~'   s3sb   '~-.                     \\\\\\\
+////                       {  S3 Site Backup  }                       \\\\
+//                          \       by       /                          \\
+//                           :   BigglesZX  :                           \\
+//                           "              "                           \\
+//                            *            *                            \\
+///                                                                    \\\
+// / / / / / / / / / / / / / / / / /  \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \\
+
+// 0x00 . Intro  /////////////////////////////////////////////////////////
+
+Welcome to the s3sb README. This file should, if you're lucky (and if
+I've finished writing it), contain everything you need to know to get s3sb
+running in your environment.
+
+This file will change along with s3sb itself, as different features are
+improved and old behaviours retired. The time I have available to work on
+projects like s3sb varies immensely, so I'll try to make sure this file 
+stays up to date - even in describing behaviours that will soon be
+retired - so that you can use s3sb whatever state it's in.
+
+
+// 0x01 . What is s3sb?  /////////////////////////////////////////////////
+
+In one sentence, s3sb - S3 Site Backup - is a Bash shell script designed
+to back up whole websites - files and database contents - on to Amazon S3.
+
+It allows you to specify a directory where files are located, as well as 
+connection details for the database used by that site, and when executed 
+it will pack up those files into a .tar.gz file, dump the database into a 
+.sql.gz file, then upload both those files to an Amazon S3 account, filing
+them neatly into a bucket named after the site. Timestamps are included in
+the filenames to help future retrieval. How useful!
+
+s3sb was designed to fulfil a need I had in a shared hosting environment.
+Your environment may differ, so I'm trying to ensure that s3sb can cope 
+with a variety of hosting scenarios so that it can be as helpful to you as
+it is to me. It probably won't be perfect yet, but I'm working on it.
+
+s3sb makes use of the s3-bash library created by Raphael James Cohn 
+(http://code.google.com/p/s3-bash/). The library hasn't been updated since
+version 0.02 in late 2007, so I have made a few tweaks to the code to 
+remedy a few issues. Accordingly, s3sb includes the s3-bash files required
+to get the whole thing running. As s3-bash is licensed under Apache 
+License 2.0 (http://www.apache.org/licenses/LICENSE-2.0), so is s3sb. See
+the LICENSE file for more details.
