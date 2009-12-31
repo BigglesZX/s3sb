@@ -62,13 +62,13 @@ fi
 if [ "$MODE" == "all" ] || [ "$MODE" == "db" ]; then
 	# upload database
 	echo "uploading database dump..."
-	./lib/s3-put -k `cat key.txt` -s skey.txt -T $SITENAME.db.$TIMESTAMP.sql.gz -S /s3sb/$SITENAME/$SITENAME.db.$TIMESTAMP.sql.gz
+	./lib/s3-put -k `cat ./lib/key.txt` -s ./lib/skey.txt -T $SITENAME.db.$TIMESTAMP.sql.gz -S /s3sb/$SITENAME/$SITENAME.db.$TIMESTAMP.sql.gz
 fi
 
 if [ "$MODE" == "all" ] || [ "$MODE" == "files" ]; then
 	# upload site files
 	echo "uploading site archive..."
-	./lib/s3-put -k `cat key.txt` -s skey.txt -T $SITENAME.files.$TIMESTAMP.tar.gz -S /s3sb/$SITENAME/$SITENAME.files.$TIMESTAMP.tar.gz
+	./lib/s3-put -k `cat ./lib/key.txt` -s ./lib/skey.txt -T $SITENAME.files.$TIMESTAMP.tar.gz -S /s3sb/$SITENAME/$SITENAME.files.$TIMESTAMP.tar.gz
 fi
 
 # clean up
