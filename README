@@ -50,6 +50,49 @@ the LICENSE file for more details.
 
 // 0x02 . Prerequisites  /////////////////////////////////////////////////
 
+s3sb is designed to be run from shell or crontab, so you'll need a UNIX-
+like environment in which to do that. s3sb should run without issue on Mac
+OS X, but this hasn't been tested as much as Linux. Windows (Cygwin) has 
+not been tested at all. You're welcome to submit patches to address any 
+OS-specific deficiency.
+
+The heart of s3sb's functionality is of course its interfacing with Amazon
+S3. So you'll need an Amazon Web Services (AWS) account, first and 
+foremost. Once you've initialised S3 on your AWS account, you'll need your
+"key" and "secret key" strings in order to allow s3sb access to your S3 
+account. Instructions for setting up your key and secret keys in the s3sb 
+config files are provided in the Installation and Configuration section.
+
+Since s3sb includes the s3-bash library, you will also need to satisfy the
+dependencies of that library. They are GNU coreutils, curl and openssl.
+Please see the documentation for your system for instructions on getting 
+those packages installed (you've probably got them installed already, 
+however, if you're using any recent version of a Linux distribution).
+
+As previously mentioned, I've tweaked the bundled version of s3-bash to 
+fix a few issues that were present in the stock code. Please see the 
+s3-bash Issues page on Google Code 
+(http://code.google.com/p/s3-bash/issues/list) for full details on the 
+bugs. The fixes are:
+
+  > Issues #6 and #11
+  A bug in the way headers were signed, fixed thanks to the patch provided
+  by batlogg on Issue #11.
+
+  > Issue #7
+  A URL-forming bug preventing the use of European S3 buckets, fixed 
+  thanks to the patch provided by jon.keys
+
+  > Issue #17
+  URLencode entities (e.g. %20) in filenames would break put operations. 
+  Fixed thanks to the suggestion in the Issue comments from "admin".
+
+Feel free to use the code from my updated s3-bash files to patch your own 
+s3-bash installation. The Google Code project for s3-bash has seen very 
+little activity since the 0.02 release in 2007 so it's unlikely that 
+official updates will be forthcoming any time soon.
+
+
 // 0x03 . Installation and Configuration  ////////////////////////////////
 
 // 0x04 . Usage  /////////////////////////////////////////////////////////
