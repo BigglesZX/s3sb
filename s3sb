@@ -53,7 +53,7 @@ then
 	exit
 fi
 
-echo "s3backup: starting backup of $SITENAME (mode: $MODE)..."
+echo "s3sb: starting backup of $SITENAME (mode: $MODE)..."
 
 if [ "$MODE" == "all" ] || [ "$MODE" == "db" ]; then
 	# dump database

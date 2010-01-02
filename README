@@ -165,16 +165,124 @@ The permission settings appear in the second column. Yours should look
 exactly like this. If you're in any doubt here, please consult your 
 operating system documentation.
 
-Incidentally, the reason we use files to store your keys and don't just 
-specify them on the command line is because anything passed as an argument
-to a command can be viewed by other users on the system (in "ps", for 
-example). And we don't want anyone getting hold of your S3 keys for 
+Incidentally, the reason s3sb uses files to store your keys and does't 
+just read them off the command line is because anything passed as an 
+argument to a command can be viewed by other users on the system (in "ps",
+for example). And we don't want anyone getting hold of your S3 keys for 
 obvious reasons.
 
 
 // 0x04 . Usage  /////////////////////////////////////////////////////////
 
+Currently, s3sb takes a bunch of parameters on the command line in order 
+to configure the files and data that will be involved in your backup. One 
+of the first things on my TODO list is to rejig s3sb so that sites are set
+up with individual "profiles" in a central config location. That hasn't 
+quite happened yet however, so for the time being s3sb must be given all 
+the necessary parameters on the command line.
+
+s3sb runs in one of three "modes" - "files", "db" or "all". "Files" mode 
+will back up only the files in your site (not the database); "db" mode 
+only backs up the database (not the files); while the "all" mode will back
+up everything. These modes exist so that you can back up files and db on 
+different schedules - for example I have a bunch of sites where the files 
+change far less often than the data, so I might back up the files every 
+week and the data every day.
+
+Regardless of what mode you run s3sb in, the parameters it takes are the 
+same. You'll need the following info:
+
+  i.   A 'friendly name' for your site (e.g. "acmewidgets") - this is used
+       to name the directory and archive files into which your backups are
+       packed and stored. No spaces or non-alphanumeric characters.
+
+  ii.  The hostname for your database server where the site's database is 
+       hosted (it should also be accessible from the machine where the 
+       backup is being run - chances are it will be) - you can also use an
+       IP address.
+
+  iii. The username you want to use to connect to the database.
+
+  iv.  The password for the above user.
+
+  v.   The name of the database you want to connect to.
+
+  vi.  The directory on your server where the website files that you want 
+       to back up reside. I usually set this to include the entire 
+       website, but you may wish to only back up a specific subdirectory,
+       for whatever reason.
+
+Running s3sb with no arguments/parameters will give you the usage message,
+which describes where the info above needs to go:
+
+  $ ./s3sb
+  Usage: ./s3sb [all | files | db] sitename dbhost dbuser dbpassfile 
+  dbname dirname/
+
+The only cryptic argument here should be "dbpassfile". As mentioned in the
+previous section, we don't want to enter passwords as arguments on the 
+command line, as these are visible to other users. So, put your db 
+password (for our example "acme" site) into its own text file, as we did
+with the AWS keys above:
+
+  $ echo -n "<acmedbpass>" > acme.txt
+  $ chmod 600 acme.txt
+
+This will save your password into acme.txt and set its permissions so only
+your user can read it. If this seems awkward it's because it is - in a 
+near-future version we'll be moving this config into a dedicated file as 
+previously mentioned.
+
+So, to back up our example "acmewidgets" site, you'd run something like 
+the following:
+
+  $ ./s3sb all acmewidgets mysql.acmewidgets.com acmedb 
+  /home/youruser/acme.txt acmewidgets /var/www/acme-public/
+
+Note that I've split the above command onto multiple lines for easier 
+readability; when you type it out in your shell it should all be on the 
+same line. s3sb will fire up, and you should see output similar to the 
+following:
+
+  s3sb: starting backup of acmewidgets (mode: all)...
+  dumping database...
+  archiving site files...
+  tar: Removing leading `../' from member names
+  uploading database dump...
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time
+  Current  Dload  Upload   Total   Spent    Left  Speed
+  100  6439  0  0  100  6439  0  29870 --:--:-- --:--:-- --:--:--  101k
+  uploading site archive...
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time
+  Current  Dload  Upload   Total   Spent    Left  Speed
+  100 10.9M  0  0  100 10.9M  0   936k  0:00:11  0:00:11 --:--:-- 1137k
+  cleaning up...
+  done
+
+Start your S3 browser of choice (I can recommend Cyberduck for OS X or the
+Amazon S3 Firefox Organizer - 
+https://addons.mozilla.org/en-US/firefox/addon/3247) and connect to your 
+S3 account. Browse to the bucket you created earlier (probably called 
+s3sb). Within it you should see a directory named after your site 
+(acmewidgets), and within that should be two files, one .tar.gz containing
+your site files, and the other a .sql.gz containing your database dump. 
+Download them, unpack them somewhere and check that all is in order - make
+sure they include everything you're expecting.
+
+You may now want to set up a cron job to run s3sb on a schedule. See the 
+documentation for cron on your system for more info on this. You'll want 
+to keep email notifications turned on the first few times to make sure 
+your backup is working properly. Also bear in mind the point in the Known 
+Issues section below about concurrency.
+
+
 // 0x05 . Known Issues  //////////////////////////////////////////////////
+
+- Awkward arguments/config
+- Backup pruning
+- Error handling
+- S3 security (backups aren't encrypted)
+- Concurrency
 
 // 0x06 . Roadmap  ///////////////////////////////////////////////////////
 
