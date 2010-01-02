@@ -36,6 +36,9 @@
 #                                                                              #
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
+# version definition
+VERSION="0.1"
+
 # params
 MODE=$1
 SITENAME=$2
@@ -49,7 +52,11 @@ TIMESTAMP=`date "+%Y%m%d.%H%M%S"`
 
 if [ $# -lt 7 ]
 then
-	echo "Usage: ./s3sb [all | files | db] sitename dbhost dbuser dbpassfile dbname dirname/"
+	echo "s3sb version $VERSION by BigglesZX"
+	echo "http://github.com/BigglesZX/s3sb"
+	echo ""
+	echo "Usage: ./s3sb [all|files|db] sitename dbhost dbuser dbpassfile dbname dirname/"
+	echo ""
 	exit
 fi
 

@@ -350,6 +350,12 @@ particular order).
        control over the files included in the backup would be good, e.g. 
        the ability to exclude certain files/dirs.
 
+  viii.Add size report for generated archives.
+
+  viv. Check for existence of key files; s3-bash libs, etc
+
+  vv.  Check permissions on key files when run.
+
 That's it for now. Feel free to suggest other features you think would be
 useful. I can't promise to be able to add them in a timely fashion (you 
 could always submit your own patch), but I'll definitely consider all 
