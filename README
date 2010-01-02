@@ -278,13 +278,91 @@ Issues section below about concurrency.
 
 // 0x05 . Known Issues  //////////////////////////////////////////////////
 
-- Awkward arguments/config
-- Backup pruning
-- Error handling
-- S3 security (backups aren't encrypted)
-- Concurrency
+s3sb is a work in progress - I've mostly been focussing on preparing my 
+original icky code for a github release (and writing this long-ass file), 
+so needless to say there are issues in the current s3sb code which you 
+should be aware of. These are being worked on - they're just not fixed 
+yet :).
+
+  i.   Awkward config: As previously mentioned, having to specify all the 
+       options for a backup right there on the command line every time
+       s3sb is run isn't the most convenient arrangement. Soon(TM), s3sb 
+       will use a new central config file that'll allow you to set up 
+       individual site "profiles" that contain all the config info s3sb 
+       needs, allowing you to start a backup run with a much shorter 
+       command. It'll also save you from having to deal with separate 
+       password files for each site. Phew.
+
+  ii.  Error handling: Right now s3sb just runs through all the steps in
+       the dump/package/upload cycle without doing much error checking to
+       properly deal with failures in one or more steps. Additionally s3sb
+       itself doesn't return a meaningful error code, making it tricky to
+       use it in conjunction with other scripts. This is in the TODO list
+       and will eventually be written in.
+
+  iii. S3 security: Make sure you trust anyone else who has access to your
+       S3 account, as the backup files that s3sb produces are not 
+       encrypted. This is being considered as a future feature.
+
+  iv.  Concurrency: I don't have any reason to suspect that this will be a
+       problem, but I run all my s3sb cron jobs with a few minutes' space
+       between them, to ward off any possible concurrency issues. I do 
+       this only because I haven't tested it. Future versions will be 
+       tested in this area :).
+
+If you discover any other issues while using s3sb (and it's likely there
+will be others), feel free to report them on github and I'll do my best to
+fix 'em.
+
 
 // 0x06 . Roadmap  ///////////////////////////////////////////////////////
 
+The following things are on the list for near-future development (in no 
+particular order).
+
+  i.   Centralised config/site profiles: Mentioned a bunch of times above,
+       this is what I want to get written into s3sb ASAP.
+
+  ii.  Error handling: As mentioned in Known Issues, s3sb needs to handle
+       errors properly.
+
+  iii. Concurrency testing: Need to ensure as much as possible that s3sb 
+       can run multiple instances concurrently without creating horrible
+       issues in space/time.
+
+  iv.  Backup pruning: I'd like to add the ability for s3sb to 
+       automagically prune backups older than a specified age from the S3
+       bucket. This strikes me as being a tiny bit tricky but it's on the
+       wishlist.
+
+  v.   Backup encryption: As mentioned above, the backups that s3sb puts
+       on S3 aren't encrypted. It would be nice to have this as a feature
+       in the future, perhaps using something simple like passworded AES.
+
+  vi.  Granular DB backup: I'd like to provide more control over the 
+       database side of the backup process, in as much as drilling down to
+       include/exclude specific tables.
+
+  vii. Granular file backup: As with the previous point, more granular
+       control over the files included in the backup would be good, e.g. 
+       the ability to exclude certain files/dirs.
+
+That's it for now. Feel free to suggest other features you think would be
+useful. I can't promise to be able to add them in a timely fashion (you 
+could always submit your own patch), but I'll definitely consider all 
+suggestions.
+
+If you made it this far, congratulations! Your dedication to the README is
+much appreciated. Hope you enjoy s3sb - let me know how you get on using 
+it :). This is my first proper OSS release and it would give me great 
+pleasure to know that someone else is using and enjoying something I 
+wrote :).
+
+Happy landings,
+                                                                 BigglesZX
+                                              http://github.com/BigglesZX/
+                                          http://github.com/BigglesZX/s3sb
+
 
 // EOF ///////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
