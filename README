@@ -90,10 +90,87 @@ bugs. The fixes are:
 Feel free to use the code from my updated s3-bash files to patch your own 
 s3-bash installation. The Google Code project for s3-bash has seen very 
 little activity since the 0.02 release in 2007 so it's unlikely that 
-official updates will be forthcoming any time soon.
+official updates will be forthcoming any time soon. If there are any 
+updates in the future I'll try and merge them into s3sb where appropriate.
 
 
 // 0x03 . Installation and Configuration  ////////////////////////////////
+
+Installation of s3sb is pretty simple - just clone the git repos or 
+grab the files by more manual means. Stick them in a sensibly named 
+directory on the machine from which you wish to make your backups. You 
+could call it "s3sb", "s3sitebackup", or even "awesomebackuptool". The 
+choice is yours.
+
+Once the files are in place, you'll probably need to make the main s3sb 
+script executable. In most UNIX-like environments, this can be 
+accomplished with the following command (substitute the name of your s3sb
+directory from the previous step):
+
+  $ cd awesomebackuptool/
+  $ chmod u+x s3sb
+
+Note that (as with all command-line examples in this README) the $ 
+indicates your shell prompt, and should not be typed :).
+
+The next step is to configure your AWS key and secret key. At the moment 
+these are stored in two text files in the lib/ directory.
+
+Note: for reasons I won't go into here, the files containing your key and 
+secret key must be exactly the right length - the key file must be 20 
+bytes and the secret key file 40 bytes. What I've found usually happens is
+that most text editors append a newline to the end of your file when 
+editing, creating a horrid undesirable extra byte. Oh noes!
+
+Thankfully, avoiding this is easy. Browse to the lib/ directory in your 
+s3sb installation, copy your AWS key (not secret key) to the clipboard, 
+and do the following:
+
+  $ echo -n "<paste your key>" > key.txt
+
+Ignore the <angle brackets>, but keep the double quotes! This will create
+key.txt, containing your AWS key and no trailing newline, phew.
+
+Creating your secret key file is a very similar process - copy your AWS 
+secret key to the clipboard, then do:
+
+  $ echo -n "<paste your secret key>" > skey.txt
+
+Once again, ignore the angle brackets, but keep the double quotes.
+
+Now, MOST IMPORTANTLY, if you're installing s3sb in a shared environment 
+(e.g. a server on which there are users besides yourself), you MUST change
+the permissions on the key and secret key files so that they're readable 
+only by your user. In fact, it's good practice to do this even if there 
+aren't any other users on your server, as it's possible there will be in 
+the future and you can bet you won't remember that your secret key file 
+is world readable. So, back in the lib/ directory, run the following 
+command:
+
+  $ chmod 600 key.txt skey.txt
+
+This will reset the permissions on your key files so they are only 
+readable by your user. Nobody else will be able to view their contents.
+
+You can check the permissions were applied correctly by running (in lib/):
+
+  $ ls -lash *key.txt
+
+You should see something like this:
+
+  0 -rw-------  1 youruser yourgroup 20 2009-05-31 05:02 key.txt
+  0 -rw-------  1 youruser yourgroup 40 2009-05-31 03:14 skey.txt
+
+The permission settings appear in the second column. Yours should look
+exactly like this. If you're in any doubt here, please consult your 
+operating system documentation.
+
+Incidentally, the reason we use files to store your keys and don't just 
+specify them on the command line is because anything passed as an argument
+to a command can be viewed by other users on the system (in "ps", for 
+example). And we don't want anyone getting hold of your S3 keys for 
+obvious reasons.
+
 
 // 0x04 . Usage  /////////////////////////////////////////////////////////
 
