@@ -231,7 +231,8 @@ function writeStringToSign
 	
 	urlPath="$(echo "$url" | awk 'BEGIN { FS="[?]"} { print $1 }')"
 	urlQueryString="$(echo "$url" | awk 'BEGIN { FS="[?]"} { print $2 }')"
-	printf "$urlPath" >> "$outputFile"
+	# fix for Issue 17
+	echo -n "$urlPath" >> "$outputFile"
 	if [ "$urlQueryString" = "acl" ] || [ "$urlQueryString" = "torrent" ]; then
 		printf "?" >> "$outputFile"
 		printf "$urlQueryString" >> "$outputFile"
@@ -246,7 +247,10 @@ function writeStringToSignAmazonHeaders()
 	#sort
 	#Strip ": " to ":"
 	#Add LF to each header
-	awk 'BEGIN { FS=": " } NF == 2 { print tolower($1) ":" $2 }' "$amazonHeaderFile" | sort >> "$outputFile"
+	#awk 'BEGIN { FS=": " } NF == 2 { print tolower($1) ":" $2 }' "$amazonHeaderFile" | sort >> "$outputFile"
+	#remove none x-amz* headers these are the only ones that need to be signed
+	awk 'BEGIN { FS=": " } NF == 2 { print tolower($1) ":" $2 }' "$amazonHeaderFile" | grep ^x-amz-* | sort >> "$outputFile"
+	#awk 'BEGIN { FS=": " } NF == 2 { print $1 ": " $2 }' "$amazonHeaderFile" | sort >> "$outputFile"
 	#TODO: RFC 2616, section 4.2 (combine repeated headers' values)
 	#TODO: Unfold long lines (not supported elsewhere)
 }
@@ -289,13 +293,16 @@ function writeAmazonHeadersForCurl
 		printErrorHelpAndExit "X-Amz-Date header not allowed" $userSpecifiedDataErrorExitCode
 	fi
 	# Consider using sed...
-	awk 'BEGIN { ORS=" "; FS="\0" } { print "--header \"" $1 "\""}' "$amazonHeaderFile" >> "$1"
+	#awk 'BEGIN { ORS=" "; FS="\0" } { print "--header \"" $1 "\""}' "$amazonHeaderFile" >> "$1"
+	awk 'BEGIN { ORS=" "; FS="\n" } { print "--header \"" $1 "\""}' "$amazonHeaderFile" >> "$1"
 }
 
 function runCurl
 {
 	local verbAndAnyData="$1"
-	local fullUrl="$protocol://s3.amazonaws.com$url"
+	# fix for Issue 7
+	#local fullUrl="$protocol://s3.amazonaws.com$url"
+	local fullUrl="$protocol://$bucketName.s3.amazonaws.com$urlSuffix"
 	createTemporaryFile "curl"
 	local tempCurlCommand="$(mostRecentTemporaryFile)"
 	local cleanUpCommand="rm -f "$tempCurlCommand""

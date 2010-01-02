@@ -48,6 +48,9 @@ function parseOptions
 {
 	verbose=""
 	url=""
+	# fix for Issue 7
+	  bucketName=""
+	  urlSuffix=""
 	awsAccessKeyId=""
 	awsAccessSecretKeyIdFile=""
 	protocol="http"
@@ -55,7 +58,7 @@ function parseOptions
 	dumpHeaderFile="/dev/null"
 	amazonHeaderFile="/dev/null"
 	contentType="text/plain"
-	while getopts "hvk:s:SH:T:a:c:" optionName; do		
+	while getopts "hvk:s:SH:T:a:c:" optionName; do
 		case "$optionName" in
 			h)	printHelpAndExit 0;;
 			v)	verbose="-v";;
@@ -82,6 +85,9 @@ function parseOptions
 	fi
 	url="$1"
 	verifyUrl
+	# fix for Issue 7
+	bucketName=`echo $url | cut -d '/' -f2`
+	urlSuffix=`expr match "$url" "\/$bucketName\(\/.*\)"`
 		
 	if [ -z "$awsAccessSecretKeyIdFile" ]; then
 		printErrorHelpAndExit "AWS Secret Access Key file not specified" $userSpecifiedDataErrorExitCode
