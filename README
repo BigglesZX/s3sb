@@ -171,6 +171,9 @@ argument to a command can be viewed by other users on the system (in "ps",
 for example). And we don't want anyone getting hold of your S3 keys for 
 obvious reasons.
 
+Finally, create a new bucket on your S3 account named "s3sb" (this will be
+configurable later). Your backups will be placed in this bucket.
+
 
 // 0x04 . Usage  /////////////////////////////////////////////////////////
 
