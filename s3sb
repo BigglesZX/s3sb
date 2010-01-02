@@ -11,11 +11,11 @@
 #################################################
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^#
-#   This script is still very much a work in progress. Various   #
-#   things are likely to be broken, as noted in the README       #
-#   file. You'll be able to get it going, no doubt, with a bit   #
-#   of tweaking, but it's not quite in a production-ready        #
-#   state. Please read the README.                               #
+#   Welcome to s3sb! Please read the README file before you      #
+#   get started. This project is still a work in progress! You   #
+#   can be assured of a minimum level of functionality, but      #
+#   please see the README for details of known issues and        #
+#   future features. Thanks!                                     #
 #________________________________________________________________#
 
 #******************************************************************************#
