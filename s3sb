@@ -96,3 +96,4 @@ if [ "$MODE" == "all" ] || [ "$MODE" == "db" ]; then
 fi
 
 echo "done"
+exit 0
