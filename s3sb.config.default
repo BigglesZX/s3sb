@@ -48,6 +48,12 @@ S3SB_KEYSIZE=20
 # size in bytes the secret key file should be (shouldn't be changed)
 S3SB_SKEYSIZE=40
 
+# the timestamp used in the backup archive filenames
+# see the manual for the "date" command for format strings you can use here
+# note that timestamps are generated at the moment the next line executes,
+# not when the files themselves are created
+TIMESTAMP=`date "+%Y%m%d.%H%M%S"`
+
 
 ## Site Profile config  #######################################################
 
@@ -71,8 +77,7 @@ n=0
 #     SITE_DBNAME[$n]="testsitedb"
 # directory where the site's files are stored (relative to s3sb itself)
 #     SITE_SITEDIR[$n]="../sites/testsite"
-# name for the site's directory in your S3 bucket (defaults to SITE_NAME)
-# avoid a trailing slash
+# name for the site's directory in your S3 bucket - avoid a trailing slash
 #     SITE_BUCKETDIR="testsite"
 # very important that this line be left in - increment the array pointer
 #     let "n++"
@@ -110,114 +115,5 @@ SITE_SITEDIR[$n]="../sites/testsite3"
 SITE_BUCKETDIR[$n]="testsite3"
 let "n++"
 
-echo ${SITE_NAME[@]}
-echo "$n site(s) configured"
-echo "s3sb config successfully loaded"
-echo ""
 
-# Site-finding function (searches the defined site profiles)
-# usage: s3sb_find_site "name-of-site"
-index=-1
-s3sb_find_site() {
-	needle=$1
-	index=-1
-	for (( i = 0 ; i < ${#SITE_NAME[@]} ; i++ ))
-	do
-		if [[ "${SITE_NAME[$i]}" == "$1" ]]
-		then
-			index=$i
-		fi
-	done
-}
-
-s3sb_find_site "testsite"
-if [ "$index" -eq "-1" ]
-then
-	echo "testsite not found"
-else
-	echo "testsite found at index $index"
-fi
-
-s3sb_find_site "nonexistentsite"
-if [ "$index" -eq "-1" ]
-then
-	echo "nonexistentsite not found"
-else
-	echo "nonexistentsite found at index $index"
-fi
-
-echo ""
-
-# sanity checks on key and skey files
-if [ -e $S3SB_KEYFILE ]
-then
-	# check permissions
-	if [ -n "$(find $S3SB_KEYFILE -perm -004)" ]
-	then
-		echo "WARNING: key file is world readable, please see the README"
-	fi
-	
-	# check size
-	keysize=$(wc -m $S3SB_KEYFILE | awk '{print $1}')
-	if [ "$keysize" != "$S3SB_KEYSIZE" ]
-	then
-		echo "WARNING: key file should be $S3SB_KEYSIZE bytes, it appears to be $keysize"
-	fi
-else
-	echo "WARNING: key file not found, please see the README"
-	exit 1
-fi
-
-if [ -e $S3SB_SKEYFILE ]
-then
-	# check permissions
-	if [ "$(find $S3SB_SKEYFILE -perm -004)" ]
-	then
-		echo "WARNING: secret key file is world readable, please see the README"
-	fi
-	
-	# check size
-	skeysize=$(wc -m $S3SB_SKEYFILE | awk '{print $1}')
-	if [ "$skeysize" != "$S3SB_SKEYSIZE" ]
-	then
-		echo "WARNING: secret key file should be $S3SB_SKEYSIZE bytes, it appears to be $skeysize"
-	fi
-else
-	echo "WARNING: secret key file not found, please see the README"
-	exit 1
-fi
-
-# parameter check
-# we're expecting 3 params total (including the name of the script)
-# $0 scriptname, $1 sitename, $2 backupmode (that's a count of 2, officially)
-if [ ! "$#" -eq "2" ]
-then
-	echo "Usage: $0 sitename backupmode"
-else
-	# check sitename
-	s3sb_find_site $1
-	if [ "$index" -eq "-1" ]
-	then
-		echo "profile for $1 not found"
-	else
-		echo "profile for $1 found at index $index"
-	fi
-	
-	# check backupmode
-	if [ "$2" == "files" ]
-	then
-		echo "files backup mode selected"
-	else
-		if [ "$2" == "db" ]
-		then
-			echo "db backup mode selected"
-		else
-			if [ "$2" == "all" ]
-			then
-				echo "all backup mode selected"
-			else
-				echo "invalid backup mode selected"
-			fi
-		fi
-	fi
-fi
+## Stop editing now :)  #######################################################

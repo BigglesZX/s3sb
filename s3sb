@@ -36,63 +36,159 @@
 #                                                                             #
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
-# version definition
-VERSION="0.2"
-
-# params
-MODE=$1
-SITENAME=$2
-DBHOST=$3
-DBUSER=$4
-DBPASS=$5
-DBNAME=$6
-DIRNAME=$7
-
-TIMESTAMP=`date "+%Y%m%d.%H%M%S"`
-
-if [ $# -lt 7 ]
+# include the config file
+CONFIG_FILE="s3sb.config"
+if [ -e "$CONFIG_FILE" ]
 then
-	echo "s3sb version $VERSION by BigglesZX"
-	echo "http://github.com/BigglesZX/s3sb"
+	source $CONFIG_FILE
+else
+	echo "Couldn't find the s3sb.config file."
+	echo "You should make a copy of s3sb.config.default to store your local configuration"
+	echo "Try:"
+	echo -e "\t$ cp s3sb.config.default s3sb.config"
 	echo ""
-	echo "Usage: ./s3sb [all|files|db] sitename dbhost dbuser dbpassfile dbname dirname/"
-	echo ""
-	exit
+	echo "See the README for help with your configuration, or follow the prompts in the config file."
+	exit 1
 fi
 
-echo "s3sb: starting backup of $SITENAME (mode: $MODE)..."
+echo -e "|- \033[32ms3sb\033[0m version $S3SB_VERSION by BigglesZX"
+echo "|- http://github.com/BigglesZX/s3sb"
+echo "Config successfully loaded - $n site(s) configured"
+echo ""
 
+# check permissions on config file
+if [ -n "$(find $CONFIG_FILE -perm -004)" ]
+then
+	echo -e "\033[31m*WARNING:*\033[0m the config file is world readable, please see the README"
+fi
+
+# Site-finding function (searches the defined site profiles)
+# usage: s3sb_find_site "name-of-site"
+index=-1
+s3sb_find_site() {
+	needle=$1
+	index=-1
+	for (( i = 0 ; i < ${#SITE_NAME[@]} ; i++ ))
+	do
+		if [[ "${SITE_NAME[$i]}" == "$1" ]]
+		then
+			index=$i
+		fi
+	done
+}
+
+# parameter check
+# we're expecting 3 params total (including the name of the script)
+# $0 scriptname, $1 sitename, $2 backupmode (that's a count of 2, officially)
+if [ ! "$#" -eq "2" ]
+then
+	echo "Usage: $0 sitename [all | files | db]"
+	echo ""
+	exit 1
+else
+	# check sitename
+	s3sb_find_site $1
+	if [ "$index" -eq "-1" ]
+	then
+		echo "Couldn't find configuration profile for $1, exiting"
+		exit 1
+	else
+		echo "Configuration profile for $1 found at index $index"
+		SITE_INDEX=$index
+	fi
+	
+	# check backupmode
+	if [ "$2" == "all" ] || [ "$2" == "files" ] || [ "$2" == "db" ]
+	then
+		# valid mode
+		MODE=$2
+	else
+		echo "Invalid backup mode selected (must be one of files, db or all), exiting"
+		exit 1
+	fi
+	
+	echo "Preparing to run backup of \"${SITE_FRIENDLYNAME[$SITE_INDEX]}\" (mode: $MODE)..."
+	echo ""
+fi
+
+# sanity checks on key and skey files
+if [ -e $S3SB_KEYFILE ]
+then
+	# check permissions
+	if [ -n "$(find $S3SB_KEYFILE -perm -004)" ]
+	then
+		echo -e "\033[31m*WARNING:*\033[0m the key file is world readable, please see the README"
+	fi
+	
+	# check size
+	keysize=$(wc -m $S3SB_KEYFILE | awk '{print $1}')
+	if [ "$keysize" != "$S3SB_KEYSIZE" ]
+	then
+		echo -e "\033[31m*WARNING:*\033[0m the key file should be $S3SB_KEYSIZE bytes, it appears to be $keysize"
+	fi
+else
+	echo -e "\033[31m*WARNING:*\033[0m the key file was not found, please see the README"
+	exit 1
+fi
+
+if [ -e $S3SB_SKEYFILE ]
+then
+	# check permissions
+	if [ "$(find $S3SB_SKEYFILE -perm -004)" ]
+	then
+		echo -e "\033[31m*WARNING:*\033[0m the secret key file is world readable, please see the README"
+	fi
+	
+	# check size
+	skeysize=$(wc -m $S3SB_SKEYFILE | awk '{print $1}')
+	if [ "$skeysize" != "$S3SB_SKEYSIZE" ]
+	then
+		echo -e "\033[31m*WARNING:*\033[0m the secret key file should be $S3SB_SKEYSIZE bytes, it appears to be $skeysize"
+	fi
+else
+	echo -e "\033[31m*WARNING:*\033[0m the secret key file was not found, please see the README"
+	exit 1
+fi
+
+# do the backup
 if [ "$MODE" == "all" ] || [ "$MODE" == "db" ]; then
 	# dump database
 	echo "dumping database..."
-	mysqldump -h $DBHOST -u $DBUSER -p`cat $DBPASS` --opt $DBNAME | gzip > $SITENAME.db.$TIMESTAMP.sql.gz
+	mysqldump -h ${SITE_DBHOST[$SITE_INDEX]} -u ${SITE_DBUSER[$SITE_INDEX]} -p`cat ${SITE_DBPASS[$SITE_INDEX]}` --opt ${SITE_DBNAME[$SITE_INDEX]} | gzip > ${SITE_NAME[$SITE_INDEX]}.db.$TIMESTAMP.sql.gz
 fi
 
 if [ "$MODE" == "all" ] || [ "$MODE" == "files" ]; then
 	# create tarball of site files
 	echo "archiving site files..."
-	tar -czf $SITENAME.files.$TIMESTAMP.tar.gz $DIRNAME
+	tar -czf ${SITE_NAME[$SITE_INDEX]}.files.$TIMESTAMP.tar.gz ${SITE_SITEDIR[$SITE_INDEX]}
 fi
 
 if [ "$MODE" == "all" ] || [ "$MODE" == "db" ]; then
 	# upload database
 	echo "uploading database dump..."
-	./lib/s3-put -k `cat ./lib/key.txt` -s ./lib/skey.txt -T $SITENAME.db.$TIMESTAMP.sql.gz -S /s3sb/$SITENAME/$SITENAME.db.$TIMESTAMP.sql.gz
+	lib/s3-put -k `cat $S3SB_KEYFILE` -s $S3SB_SKEYFILE -T ${SITE_NAME[$SITE_INDEX]}.db.$TIMESTAMP.sql.gz -S /$S3SB_BUCKET/${SITE_BUCKETDIR[$SITE_INDEX]}/${SITE_NAME[$SITE_INDEX]}.db.$TIMESTAMP.sql.gz
 fi
 
 if [ "$MODE" == "all" ] || [ "$MODE" == "files" ]; then
 	# upload site files
 	echo "uploading site archive..."
-	./lib/s3-put -k `cat ./lib/key.txt` -s ./lib/skey.txt -T $SITENAME.files.$TIMESTAMP.tar.gz -S /s3sb/$SITENAME/$SITENAME.files.$TIMESTAMP.tar.gz
+	lib/s3-put -k `cat $S3SB_KEYFILE` -s $S3SB_SKEYFILE -T $SITE_NAME[$SITE_INDEX].files.$TIMESTAMP.tar.gz -S /$S3SB_BUCKET/${SITE_BUCKETDIR[$SITE_INDEX]}/${SITE_NAME[$SITE_INDEX]}.files.$TIMESTAMP.tar.gz
 fi
+
+# size notification
+echo -n "uploaded "
+`du -h ${SITE_NAME[$SITE_INDEX]}.files.$TIMESTAMP.tar.gz | awk '{print $1}'`
+echo -n " files and "
+`du -h ${SITE_NAME[$SITE_INDEX]}.db.$TIMESTAMP.sql.gz | awk '{print $1}'`
+echo " database"
 
 # clean up
 echo "cleaning up..."
 if [ "$MODE" == "all" ] || [ "$MODE" == "files" ]; then
-	rm $SITENAME.files.$TIMESTAMP.tar.gz
+	rm ${SITE_NAME[$SITE_INDEX]}.files.$TIMESTAMP.tar.gz
 fi
 if [ "$MODE" == "all" ] || [ "$MODE" == "db" ]; then
-	rm $SITENAME.db.$TIMESTAMP.sql.gz
+	rm ${SITE_NAME[$SITE_INDEX]}.db.$TIMESTAMP.sql.gz
 fi
 
 echo "done"
