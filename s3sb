@@ -47,7 +47,7 @@ else
 	echo "Try:"
 	echo -e "\t$ cp s3sb.config.default s3sb.config"
 	echo ""
-	echo "See the README for help with your configuration, or follow the prompts in the config file."
+	echo "See the README for help with your configuration, or follow the prompts in the config file. Be sure to make your config file readable only by your user - see the README."
 	exit 1
 fi
 
@@ -154,7 +154,7 @@ fi
 if [ "$MODE" == "all" ] || [ "$MODE" == "db" ]; then
 	# dump database
 	echo "dumping database..."
-	mysqldump -h ${SITE_DBHOST[$SITE_INDEX]} -u ${SITE_DBUSER[$SITE_INDEX]} -p`cat ${SITE_DBPASS[$SITE_INDEX]}` --opt ${SITE_DBNAME[$SITE_INDEX]} | gzip > ${SITE_NAME[$SITE_INDEX]}.db.$TIMESTAMP.sql.gz
+	mysqldump -h ${SITE_DBHOST[$SITE_INDEX]} -u ${SITE_DBUSER[$SITE_INDEX]} -p${SITE_DBPASS[$SITE_INDEX]} --opt ${SITE_DBNAME[$SITE_INDEX]} | gzip > ${SITE_NAME[$SITE_INDEX]}.db.$TIMESTAMP.sql.gz
 fi
 
 if [ "$MODE" == "all" ] || [ "$MODE" == "files" ]; then
