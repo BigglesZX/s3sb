@@ -172,15 +172,15 @@ fi
 if [ "$MODE" == "all" ] || [ "$MODE" == "files" ]; then
 	# upload site files
 	echo "uploading site archive..."
-	lib/s3-put -k `cat $S3SB_KEYFILE` -s $S3SB_SKEYFILE -T $SITE_NAME[$SITE_INDEX].files.$TIMESTAMP.tar.gz -S /$S3SB_BUCKET/${SITE_BUCKETDIR[$SITE_INDEX]}/${SITE_NAME[$SITE_INDEX]}.files.$TIMESTAMP.tar.gz
+	lib/s3-put -k `cat $S3SB_KEYFILE` -s $S3SB_SKEYFILE -T ${SITE_NAME[$SITE_INDEX]}.files.$TIMESTAMP.tar.gz -S /$S3SB_BUCKET/${SITE_BUCKETDIR[$SITE_INDEX]}/${SITE_NAME[$SITE_INDEX]}.files.$TIMESTAMP.tar.gz
 fi
 
 # size notification
 echo -n "uploaded "
-`du -h ${SITE_NAME[$SITE_INDEX]}.files.$TIMESTAMP.tar.gz | awk '{print $1}'`
-echo -n " files and "
-`du -h ${SITE_NAME[$SITE_INDEX]}.db.$TIMESTAMP.sql.gz | awk '{print $1}'`
-echo " database"
+du -h ${SITE_NAME[$SITE_INDEX]}.files.$TIMESTAMP.tar.gz | awk '{printf $1}'
+echo -n " in files and "
+du -h ${SITE_NAME[$SITE_INDEX]}.db.$TIMESTAMP.sql.gz | awk '{printf $1}'
+echo " in database"
 
 # clean up
 echo "cleaning up..."
