@@ -56,6 +56,13 @@ echo "|- http://github.com/BigglesZX/s3sb"
 echo "Config successfully loaded - $n site(s) configured"
 echo ""
 
+# check s3-bash files exist
+if [ ! -e "lib/s3-common-functions" -o ! -e "lib/s3-put" ]
+then
+	echo -e "\033[31m*WARNING:*\033[0m cannot find the s3-bash library files. s3sb cannot continue. Please see the README."
+	exit 1
+fi
+
 # check permissions on config file
 if [ -n "$(find $CONFIG_FILE -perm -004)" ]
 then
